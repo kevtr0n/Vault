@@ -2,18 +2,24 @@
  * file: AESCipher.kt
  * author: Kevin Hayden
  * course: MSCS 630
- * assignment: Lab 04
- * due date: April 4th, 2018
+ * assignment: Project
+ * due date: April 11th, 2018
  * version: 1.0
- * Converts a 32 bit hexidecimal String
- * to 11 secure 32 bit hexidecimal Strings.
+ * Provides the functions needed for
+ * encryption/decryption.
  */
+
+package vault.cryptography.encryption
 
 /**
  * Class the houses the functions for AES
  * encryption and decryption.
  */
-class AES {
+class AESCipher() {
+
+  init {
+
+  }
 
   // Values for SBox substitution:
   private val initialSBox: MutableList<Int> = mutableListOf(

@@ -1,4 +1,4 @@
-package vault.cryptography
+package vault.cryptography.login
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -22,9 +22,16 @@ import android.widget.ArrayAdapter
 import android.widget.TextView
 import java.util.ArrayList
 import android.Manifest.permission.READ_CONTACTS
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
+import android.content.Intent
+import android.util.Log
+import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_login.*
+import vault.cryptography.R
+import vault.cryptography.banking.Ledger
+import vault.cryptography.banking.MainActivity
+import vault.cryptography.banking.models.User
+import vault.cryptography.encryption.AESCipher
+import vault.cryptography.registration.RegisterActivity
 
 /**
  * A login screen that offers login via email/password.
@@ -32,7 +39,6 @@ import kotlinx.android.synthetic.main.activity_login.*
 class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
 
   // Keep track of the login task to ensure we can cancel it if requested.
-  private var mAuthTask: UserLoginTask? = null
 
   /**
    *
@@ -53,8 +59,12 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     })
 
     email_sign_in_button.setOnClickListener { attemptLogin() }
+    register_button.setOnClickListener{ register() }
   }
 
+  /**
+   *
+   */
   private fun populateAutoComplete() {
     if (!mayRequestContacts()) {
       return
@@ -63,6 +73,9 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     loaderManager.initLoader(0, null, this)
   }
 
+  /**
+   *
+   */
   private fun mayRequestContacts(): Boolean {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
       return true
@@ -97,8 +110,6 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
    * errors are presented and no actual login attempt is made.
    */
   private fun attemptLogin() {
-    if (mAuthTask != null)
-      return
 
     // Reset errors.
     email.error = null
@@ -136,9 +147,7 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     } else {
       // Show a progress spinner, and kick off a background task to
       // perform the user login attempt.
-      showProgress(true)
-      mAuthTask = UserLoginTask(emailStr, passwordStr)
-      mAuthTask!!.execute(null as Void?)
+      authenticate()
     }
   }
 
@@ -188,6 +197,9 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     }
   }
 
+  /**
+   *
+   */
   override fun onCreateLoader(i: Int, bundle: Bundle?): Loader<Cursor> {
     return CursorLoader(this,
             // Retrieve data rows for the device user's 'profile' contact.
@@ -203,6 +215,9 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
             ContactsContract.Contacts.Data.IS_PRIMARY + " DESC")
   }
 
+  /**
+   *
+   */
   override fun onLoadFinished(cursorLoader: Loader<Cursor>, cursor: Cursor) {
     val emails = ArrayList<String>()
     cursor.moveToFirst()
@@ -214,10 +229,16 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
     addEmailsToAutoComplete(emails)
   }
 
+  /**
+   *
+   */
   override fun onLoaderReset(cursorLoader: Loader<Cursor>) {
 
   }
 
+  /**
+   *
+   */
   private fun addEmailsToAutoComplete(emailAddressCollection: List<String>) {
     //Create adapter to tell the AutoCompleteTextView what to show in its dropdown list.
     val adapter = ArrayAdapter(this@LoginActivity,
@@ -235,50 +256,58 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
   }
 
   /**
-   * Represents an asynchronous login/registration task used to authenticate
-   * the user.
+   *
    */
-  inner class UserLoginTask internal constructor(private val mEmail: String, private val mPassword: String) : AsyncTask<Void, Void, Boolean>() {
+  private fun authenticate() {
 
-    override fun doInBackground(vararg params: Void): Boolean? {
-      // TODO: attempt authentication against a network service.
+    val mIntent = Intent(this@LoginActivity, MainActivity::class.java)
+    val mEmail = email.text.toString().replace("[@.]".toRegex(), "").toUpperCase()
+    val mPassword = password.text.toString().toUpperCase()
+    val database: FirebaseDatabase = FirebaseDatabase.getInstance()
+    val reference: DatabaseReference = database.getReference("users")
+    val aesCipher = AESCipher()
 
-      try {
+    reference.addValueEventListener(object : ValueEventListener {
 
-        // FireBase database.
-        val database: FirebaseDatabase = FirebaseDatabase.getInstance()
-        var myRef: DatabaseReference = database.reference
-
-      } catch (e: InterruptedException) {
-        return false
+      override fun onDataChange(p0: DataSnapshot?) {
+        try {
+          val userData = p0!!.child(mEmail)
+          val keyHex = userData.child("key").value.toString()
+          val authenticationKey = userData.child("authenticationKey").value.toString()
+          val aesEncryptionKey = aesCipher.encrypt("$mEmail:$mPassword", keyHex)
+          if (authenticationKey == aesEncryptionKey) {
+            val user = User(
+                    userData.child("firstName").value.toString(),
+                    userData.child("lastName").value.toString(),
+                    userData.child("birthDate").value.toString(),
+                    userData.child("email").value.toString(),
+                    userData.child("authenticationKey").value.toString()
+            )
+            Ledger.setUser(user)
+          }
+        } catch (ex: Exception) {
+          Log.d("Exception: ", ex.toString())
+        }
       }
-
-      return DUMMY_CREDENTIALS
-              .map { it.split(":") }
-              .firstOrNull { it[0] == mEmail }
-              ?.let {
-                // Account exists, return true if the password matches.
-                it[1] == mPassword
-              }
-              ?: true
-    }
-
-    override fun onPostExecute(success: Boolean?) {
-      mAuthTask = null
-      showProgress(false)
-
-      if (success!!) {
-        finish()
-      } else {
-        password.error = getString(R.string.error_incorrect_password)
-        password.requestFocus()
+      override fun onCancelled(p0: DatabaseError?) {
+        Log.d("Error: ", p0.toString())
       }
-    }
+    })
 
-    override fun onCancelled() {
-      mAuthTask = null
-      showProgress(false)
+    if (Ledger.getUser() != null) {
+
+      Thread.sleep(500)
+      startActivity(mIntent)
+      finish()
     }
+  }
+
+  /**
+   *
+   */
+  private fun register() {
+    val mIntent = Intent(this@LoginActivity, RegisterActivity::class.java)
+    startActivity(mIntent)
   }
 
   companion object {
@@ -287,11 +316,5 @@ class LoginActivity : AppCompatActivity(), LoaderCallbacks<Cursor> {
      * Id to identity READ_CONTACTS permission request.
      */
     private val REQUEST_READ_CONTACTS = 0
-
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private val DUMMY_CREDENTIALS = arrayOf("foo@example.com:hello", "bar@example.com:world")
-  }
+   }
 }
