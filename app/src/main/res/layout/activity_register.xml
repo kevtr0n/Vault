@@ -6,4 +6,132 @@
     android:layout_height="match_parent"
     tools:context=".registration.RegisterActivity">
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/instructionsText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="@string/instructionsTextVal"
+                android:textAlignment="center"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/userIDText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="2dp"
+                android:ems="10"
+                android:hint="@string/registerUserIDTxt"
+                android:inputType="textPersonName"
+                android:selectAllOnFocus="true"
+                android:textAlignment="center" />
+
+            <EditText
+                android:id="@+id/firstNameText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="2dp"
+                android:ems="10"
+                android:hint="@string/registerFNameTxt"
+                android:inputType="textPersonName"
+                android:selectAllOnFocus="true"
+                android:singleLine="false"
+                android:textAlignment="center"
+                android:textAllCaps="true" />
+
+            <EditText
+                android:id="@+id/lastNameText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="2dp"
+                android:ems="10"
+                android:hint="@string/registerLNameTxt"
+                android:inputType="textPersonName"
+                android:selectAllOnFocus="true"
+                android:textAlignment="center" />
+
+            <EditText
+                android:id="@+id/emailText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="2dp"
+                android:ems="10"
+                android:hint="@string/prompt_email"
+                android:inputType="textEmailAddress"
+                android:selectAllOnFocus="true"
+                android:textAlignment="center" />
+
+            <EditText
+                android:id="@+id/passwordText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="2dp"
+                android:ems="10"
+                android:hint="@string/prompt_password"
+                android:inputType="textPassword"
+                android:selectAllOnFocus="true"
+                android:textAlignment="center" />
+
+            <EditText
+                android:id="@+id/confirmPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="@string/promptPWConfirm"
+                android:inputType="textPassword"
+                android:selectAllOnFocus="true"
+                android:textAlignment="center" />
+
+            <EditText
+                android:id="@+id/birthDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="2dp"
+                android:ems="10"
+                android:hint="@string/registerBDate"
+                android:inputType="date"
+                android:selectAllOnFocus="true"
+                android:textAlignment="center" />
+
+            <Button
+                android:id="@+id/registerButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:background="@color/colorAccent"
+                android:text="@string/submitButtonTxt"
+                android:textColor="@android:color/background_light"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/cancelText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:text="@android:string/cancel"
+                android:textAlignment="center"
+                android:textAllCaps="true"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+    </ScrollView>
+
 </android.support.constraint.ConstraintLayout>

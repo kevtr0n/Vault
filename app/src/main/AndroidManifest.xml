@@ -21,9 +21,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".banking.MainActivity" />
         <activity android:name=".login.ForgotPasswordActivity" />
         <activity android:name=".registration.RegisterActivity" />
+        <activity android:name=".banking.MainActivity" />
+        <activity android:name=".registration.PasswordRecoveryActivity" />
+        <activity android:name=".login.ChangePasswordActivity"></activity>
     </application>
 
 </manifest>

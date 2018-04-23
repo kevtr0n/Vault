@@ -1,63 +1,63 @@
-package vault.cryptography.banking.models
+/**
+ * file: User.kt
+ * author: Kevin Hayden
+ * course: MSCS 630
+ * assignment: Project
+ * due date: May 8th, 2018
+ * version: 1.0
+ *
+ * The file that contains the code for
+ * creating the data class User.
+ */
 
+package vault.cryptography.banking.models
+import android.util.Log
+import com.google.firebase.database.*
 import java.util.*
 
-class User() {
-
-  private var firstName: String? = null
-  private var birthDate: String? = null
-  private var lastName: String? = null
-  private var key: String? = null
-  private var authenticationKey: String? = null
-  private var email: String? = null
-  private var accountNumbers = mutableListOf<String>()
-  private var accounts = mutableListOf<Account>()
+data class User(var firstName: String, var lastName: String, var birthDate: String,
+                var email: String, var key: String, var userID: String,
+                var authenticationKey: String, var maidenName: String?, var firstJob: String?) {
 
   /**
-   * Constructor for creating a brand new
-   * instance of the User class.
+   * Pushes the user object to the database.
+   * @return a boolean value
    */
-  constructor(firstName: String, lastName: String, birthDate: String,
-              email: String, authenticationKey: String): this() {
-    this.firstName = firstName
-    this.lastName = lastName
-    this.birthDate = birthDate
-    this.email = email
-    this.authenticationKey = authenticationKey
+  fun push(): Boolean {
+
+    val mEmail = this.email.replace("[@.]".toRegex(), "").toUpperCase()
+    val database: FirebaseDatabase = FirebaseDatabase.getInstance()
+    val users: DatabaseReference = database.getReference("users")
+    var success = false
+
+    users.addValueEventListener(object : ValueEventListener{
+
+      override fun onCancelled(error: DatabaseError?) {
+        Log.d("Error: ", error.toString())
+      }
+
+      override fun onDataChange(snapshot: DataSnapshot?) {
+        if (snapshot!!.hasChild(mEmail))
+          success = true
+      }
+    })
+
+    users.child(mEmail).setValue(this)
+    return success
   }
 
-  /**
-   * Generates a random 32 bit hexidecimal key.
-   */
-  public fun generateRandomKey() {
-    val hex = "0123456789ABCDEF"
-    val random = Random()
-    val sb = StringBuilder()
-    while (sb.length < 32)
-      sb.append(hex[random.nextInt(16)])
-    this.key = sb.toString()
+  companion object {
+
+    /**
+     * Generates a random 32 bit hexidecimal key.
+     */
+    fun generateRandomKey(): String {
+      val hex = "0123456789ABCDEF"
+      val random = Random()
+      val sb = StringBuilder()
+      while (sb.length < 32)
+        sb.append(hex[random.nextInt(16)])
+      return sb.toString()
+    }
   }
-
-  /**
-   * Adds a unique account to list of users accounts.
-   * @param account the account to be added.
-   * @return boolean whether account was added.
-   */
-  public fun addAccount(account: Account): Boolean {
-
-    for (acc in getAccounts())
-      if (acc.getAccountType() == account.getAccountType())
-        return false
-
-    this.accounts.add(account)
-    this.accountNumbers.add(account.getAccountNumber()!!)
-    return true
-  }
-
-  public fun getAccounts() = this.accounts
-  public fun getAccountNumbers() = accountNumbers
-  public fun getEmail() = this.email
-  public fun getFirstName() = this.firstName
-  public fun getLastName() = this.lastName
-  public fun getAuthenticationKey() = this.authenticationKey
 }

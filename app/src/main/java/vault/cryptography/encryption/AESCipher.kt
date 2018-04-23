@@ -3,7 +3,7 @@
  * author: Kevin Hayden
  * course: MSCS 630
  * assignment: Project
- * due date: April 11th, 2018
+ * due date: May 8th, 2018
  * version: 1.0
  * Provides the functions needed for
  * encryption/decryption.
@@ -210,7 +210,7 @@ class AESCipher() {
    * @param keyHex the key.
    * @return the ciphertext.
    */
-  public fun encrypt(plainText: String, keyHex: String): String {
+  fun encrypt(plainText: String, keyHex: String): String {
 
     var string = plainText
     val list = mutableListOf<String>()
@@ -267,7 +267,7 @@ class AESCipher() {
    * @param keyHex the key.
    * @return the plaintext.
    */
-  public fun decrypt(cipherText: String, keyHex: String): String {
+  fun decrypt(cipherText: String, keyHex: String): String {
 
     var string = cipherText
     val list = mutableListOf<String>()

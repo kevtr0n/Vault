@@ -1,24 +1,49 @@
+/**
+ * file: Account.kt
+ * author: Kevin Hayden
+ * course: MSCS 630
+ * assignment: Project
+ * due date: May 8th, 2018
+ * version: 1.0
+ *
+ * File contains code for creating the
+ * data classes Account/AccountType.
+ */
 package vault.cryptography.banking.models
 
-class Account () {
+import android.util.Log
+import com.google.firebase.database.*
+import vault.cryptography.banking.Core
 
-  private var accountNum: String? = null
-  private var accountType: AccountType? = null
-  private var accountBal: Double? = null
+data class Account (var accountNum: String, var accountType: AccountType, var accountBal: Double) {
 
-  constructor(accountNum: String, accountType: AccountType, accountBal: Double): this() {
-    this.accountNum = accountNum
-    this.accountBal = accountBal
-    this.accountType = accountType
+  /**
+   * Pushes the account object to the database.
+   * @return a boolean value based on success.
+   */
+  fun push(): Boolean {
+
+    val mAccountNum = this.accountNum.toUpperCase()
+    val database: FirebaseDatabase = FirebaseDatabase.getInstance()
+    val accounts: DatabaseReference = database.getReference("accounts")
+    var success = false
+
+    accounts.addValueEventListener(object : ValueEventListener{
+      override fun onCancelled(error: DatabaseError?) {
+        Log.d("Error: ", error.toString())
+      }
+
+      override fun onDataChange(snapshot: DataSnapshot?) {
+        if (snapshot!!.hasChild(mAccountNum))
+          success = true
+      }
+    })
+
+    accounts.child(mAccountNum).setValue(this)
+    return success
   }
+}
 
-  // Getters
-  fun getAccountNumber(): String? {return this.accountNum}
-  fun getAccountType(): AccountType? {return this.accountType}
-  fun getAccountBalance(): Double? {return this.accountBal}
-
-  // Setters
-  fun setAccountNumber(number: String) {this.accountNum = number}
-  fun setAccountType(type: AccountType) {this.accountType = type}
-  fun setAccountBalance(amount: Double) {this.accountBal = amount}
+enum class AccountType {
+  SAVINGS, CHECKING
 }
